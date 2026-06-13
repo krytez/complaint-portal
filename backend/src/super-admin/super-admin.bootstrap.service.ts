@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 
 /**
@@ -14,12 +15,20 @@ import * as bcrypt from 'bcrypt';
 export class SuperAdminBootstrapService implements OnApplicationBootstrap {
   private readonly logger = new Logger(SuperAdminBootstrapService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly config: ConfigService,
+  ) {}
 
   async onApplicationBootstrap(): Promise<void> {
-    const email = process.env.SUPER_ADMIN_EMAIL;
-    const password = process.env.SUPER_ADMIN_PASSWORD;
-    const name = process.env.SUPER_ADMIN_NAME ?? 'Super Admin';
+    await this.bootstrapSuperAdmin();
+    await this.bootstrapAdmin();
+  }
+
+  private async bootstrapSuperAdmin(): Promise<void> {
+    const email = this.config.get<string>('SUPER_ADMIN_EMAIL');
+    const password = this.config.get<string>('SUPER_ADMIN_PASSWORD');
+    const name = this.config.get<string>('SUPER_ADMIN_NAME') ?? 'Super Admin';
 
     if (!email || !password) {
       this.logger.warn(
@@ -59,5 +68,49 @@ export class SuperAdminBootstrapService implements OnApplicationBootstrap {
     this.logger.log(
       `Super admin updated (role=${roleOk ? 'ok' : 'fixed'}, password=${passwordOk ? 'ok' : 'resynced'}) → ${email}`,
     );
+  }
+
+  private async bootstrapAdmin(): Promise<void> {
+    // Check if there are admins already registered
+    const existingAdmin = await this.prisma.user.findFirst({
+      where: { role: 'ADMIN' },
+    });
+
+    if (existingAdmin) {
+      this.logger.log(
+        'At least one admin is already registered — skipping admin bootstrap.',
+      );
+      return;
+    }
+
+    const email = this.config.get<string>('ADMIN_EMAIL');
+    const password = this.config.get<string>('ADMIN_PASSWORD');
+    const name = this.config.get<string>('ADMIN_NAME') ?? 'Default Admin';
+
+    if (!email || !password) {
+      this.logger.warn(
+        'No admin is registered, and ADMIN_EMAIL or ADMIN_PASSWORD is not set in .env — skipping admin bootstrap.',
+      );
+      return;
+    }
+
+    // Check if a user with this email already exists (e.g. as student)
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
+    });
+    if (existingUser) {
+      const hashed = await bcrypt.hash(password, 10);
+      await this.prisma.user.update({
+        where: { email },
+        data: { role: 'ADMIN', password: hashed, name },
+      });
+      this.logger.log(`Existing user role updated to admin → ${email}`);
+    } else {
+      const hashed = await bcrypt.hash(password, 10);
+      await this.prisma.user.create({
+        data: { email, name, password: hashed, role: 'ADMIN' },
+      });
+      this.logger.log(`Admin created → ${email}`);
+    }
   }
 }

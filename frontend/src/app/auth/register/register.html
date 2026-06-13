@@ -86,17 +86,7 @@
       }
     </div>
 
-    <div class="auth-shell__field">
-      <label class="auth-shell__label" for="register-role">Role</label>
-      <select
-        id="register-role"
-        class="auth-shell__input auth-shell__select"
-        formControlName="role"
-      >
-        <option value="STUDENT">Student</option>
-        <option value="ADMIN">Administrator</option>
-      </select>
-    </div>
+
 
     <button class="auth-shell__button auth-shell__button--spaced" type="submit" [disabled]="loading()">
       {{ loading() ? 'Creating Account...' : 'Sign Up' }}

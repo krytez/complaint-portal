@@ -38,8 +38,7 @@ export class RegisterComponent {
                 Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/)
             ]
         ],
-        confirmPassword: [ '', [ Validators.required ] ],
-        role: [ 'STUDENT' as 'STUDENT' | 'ADMIN', [ Validators.required ] ]
+        confirmPassword: [ '', [ Validators.required ] ]
     }, { validators: this.passwordMatchValidator });
     loading = signal(false);
     errorMessage = signal<string | null>(null);

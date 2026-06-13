@@ -28,7 +28,7 @@ export interface RegisterPayload {
   email: string;
   password: string;
   confirmPassword: string;
-  role: 'STUDENT' | 'ADMIN';
+  role?: 'STUDENT' | 'ADMIN';
 }
 
 export interface LoginPayload {
