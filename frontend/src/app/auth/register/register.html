@@ -57,12 +57,14 @@
         formControlName="password"
         placeholder="Create a password"
         autocomplete="new-password"
-        [attr.aria-invalid]="hasError('password', 'required') || hasError('password', 'minlength')"
+        [attr.aria-invalid]="hasError('password', 'required') || hasError('password', 'minlength') || hasError('password', 'pattern')"
       />
       @if (hasError('password', 'required')) {
         <p class="auth-shell__error">Password is required.</p>
       } @else if (hasError('password', 'minlength')) {
         <p class="auth-shell__error">Password must be at least 6 characters.</p>
+      } @else if (hasError('password', 'pattern')) {
+        <p class="auth-shell__error">Password must contain at least one letter, one numeric character, and one symbol.</p>
       }
     </div>
 
