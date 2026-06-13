@@ -3,7 +3,10 @@
     <h1 class="dashboard-title">Student Complaint Portal</h1>
     <div class="dashboard-toolbar">
       <span class="dashboard-welcome">Welcome, <strong>{{ currentUser?.name }}</strong></span>
-      <button type="button" (click)="logout()" class="dashboard-logout-button">Logout</button>
+      <div class="dashboard-actions">
+        <button type="button" (click)="loadComplaints()" class="refresh-btn">Refresh</button>
+        <button type="button" (click)="logout()" class="dashboard-logout-button">Logout</button>
+      </div>
     </div>
   </div>
 
