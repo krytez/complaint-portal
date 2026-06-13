@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject, AfterViewInit, OnDestroy, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, signal, inject, AfterViewInit, OnDestroy, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ComplaintService, Complaint } from '../complaint.service';
 import { PlatformService } from '../core/services/platform.service';
@@ -16,7 +16,8 @@ import { DialogShellComponent } from '../shared/ui/dialog-shell/dialog-shell';
     DialogShellComponent
   ],
   templateUrl: './admin-dashboard.html',
-  styleUrl: './admin-dashboard.css'
+  styleUrl: './admin-dashboard.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private observer: IntersectionObserver | null = null;
@@ -112,12 +113,9 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     this.complaintService.markAsViewed(id).subscribe({
       next: (updated) => {
         // Update the signal with the new status/views if needed
-        const current = this.complaints();
-        const index = current.findIndex((c) => c.id === id);
-        if (index !== -1) {
-          current[ index ] = updated;
-          this.complaints.set([ ...current ]);
-        }
+        this.complaints.update((current) =>
+          current.map((c) => (c.id === id ? updated : c))
+        );
       },
       error: (err) => {
         console.error('Failed to mark as viewed', err);

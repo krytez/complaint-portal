@@ -65,7 +65,10 @@ export class SuperAdminController {
     @Request() req: AuthenticatedRequest,
     @Body() dto: PasswordConfirmDto,
   ) {
-    return this.superAdminService.deleteAllComplaints(req.user.id, dto.password);
+    return this.superAdminService.deleteAllComplaints(
+      req.user.id,
+      dto.password,
+    );
   }
 
   @HttpCode(HttpStatus.OK)

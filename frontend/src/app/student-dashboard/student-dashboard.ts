@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ComplaintService, Complaint } from '../complaint.service';
@@ -18,7 +18,8 @@ import { DialogShellComponent } from '../shared/ui/dialog-shell/dialog-shell';
     DialogShellComponent
   ],
   templateUrl: './student-dashboard.html',
-  styleUrl: './student-dashboard.css'
+  styleUrl: './student-dashboard.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StudentDashboardComponent implements OnInit {
 

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -14,7 +14,8 @@ import { FeedbackBannerComponent } from '../../shared/ui/feedback-banner/feedbac
         AuthShellComponent,
         FeedbackBannerComponent
     ],
-    templateUrl: './register.html'
+    templateUrl: './register.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RegisterComponent {
     private fb = inject(FormBuilder);

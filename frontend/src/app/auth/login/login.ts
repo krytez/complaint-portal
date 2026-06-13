@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -14,7 +14,8 @@ import { FeedbackBannerComponent } from '../../shared/ui/feedback-banner/feedbac
         AuthShellComponent,
         FeedbackBannerComponent
     ],
-    templateUrl: './login.html'
+    templateUrl: './login.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoginComponent {
     private fb = inject(FormBuilder);
