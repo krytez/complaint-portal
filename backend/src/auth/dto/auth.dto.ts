@@ -10,9 +10,21 @@ import {
 import { Role } from '@prisma/client';
 
 export class RegisterDto {
+  @IsEnum(Role)
+  @IsOptional()
+  role?: Role;
+
   @IsString()
-  @IsNotEmpty()
-  matricNumber: string;
+  @IsOptional()
+  matricNumber?: string;
+
+  @IsEmail()
+  @IsOptional()
+  email?: string;
+
+  @IsString()
+  @IsOptional()
+  name?: string;
 
   @IsString()
   @IsNotEmpty()

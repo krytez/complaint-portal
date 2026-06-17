@@ -4,7 +4,7 @@ import { ReactiveFormsModule, FormBuilder, ValidationErrors, ValidatorFn, Valida
 import { Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroEye, heroEyeSlash } from '@ng-icons/heroicons/outline';
-import { AuthService } from '../auth.service';
+import { AuthService, RegisterPayload } from '../auth.service';
 import { AuthShellComponent } from '../../shared/ui/auth-shell/auth-shell';
 import { FeedbackBannerComponent } from '../../shared/ui/feedback-banner/feedback-banner';
 
@@ -33,8 +33,13 @@ export class RegisterComponent {
         return password === confirmPassword ? null : { mismatch: true };
     };
 
+    selectedRole = signal<'STUDENT' | 'ADMIN'>('STUDENT');
+
     registerForm = this.fb.nonNullable.group({
-        matricNumber: [ '', [ Validators.required ] ],
+        role: [ 'STUDENT' as 'STUDENT' | 'ADMIN' ],
+        matricNumber: [ '' ],
+        email: [ '' ],
+        name: [ '' ],
         password: [
             '',
             [
@@ -50,6 +55,36 @@ export class RegisterComponent {
     showConfirmPassword = signal(false);
     errorMessage = signal<string | null>(null);
 
+    constructor() {
+        this.setRole('STUDENT');
+    }
+
+    setRole(role: 'STUDENT' | 'ADMIN'): void {
+        this.selectedRole.set(role);
+        this.registerForm.controls.role.setValue(role);
+        this.errorMessage.set(null);
+        
+        const { matricNumber, email, name } = this.registerForm.controls;
+        
+        matricNumber.clearValidators();
+        email.clearValidators();
+        name.clearValidators();
+        
+        if (role === 'STUDENT') {
+            matricNumber.setValidators([ Validators.required ]);
+            matricNumber.setValue('');
+        } else {
+            email.setValidators([ Validators.required, Validators.email ]);
+            email.setValue('');
+            name.setValidators([ Validators.required, Validators.minLength(2) ]);
+            name.setValue('');
+        }
+        
+        matricNumber.updateValueAndValidity();
+        email.updateValueAndValidity();
+        name.updateValueAndValidity();
+    }
+
     onSubmit(): void {
         if (this.registerForm.invalid) {
             Object.values(this.registerForm.controls).forEach(control => {
@@ -64,7 +99,21 @@ export class RegisterComponent {
         this.loading.set(true);
         this.errorMessage.set(null);
 
-        this.authService.register(this.registerForm.getRawValue()).subscribe({
+        const rawValues = this.registerForm.getRawValue();
+        const payload: RegisterPayload = {
+            role: rawValues.role,
+            password: rawValues.password,
+            confirmPassword: rawValues.confirmPassword,
+        };
+        
+        if (rawValues.role === 'STUDENT') {
+            payload.matricNumber = rawValues.matricNumber;
+        } else {
+            payload.email = rawValues.email;
+            payload.name = rawValues.name;
+        }
+
+        this.authService.register(payload).subscribe({
             next: () => {
                 this.router.navigate([ '/login' ], { queryParams: { registered: '1' } });
             },
@@ -75,7 +124,7 @@ export class RegisterComponent {
         });
     }
 
-    hasError(controlName: 'matricNumber' | 'password' | 'confirmPassword', error: string): boolean {
+    hasError(controlName: 'matricNumber' | 'email' | 'name' | 'password' | 'confirmPassword', error: string): boolean {
         const control = this.registerForm.controls[ controlName ];
         return control.touched && control.hasError(error);
     }

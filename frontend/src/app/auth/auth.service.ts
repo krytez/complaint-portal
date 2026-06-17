@@ -24,7 +24,10 @@ export interface ApiResponse<T> {
 }
 
 export interface RegisterPayload {
-  matricNumber: string;
+  role?: 'STUDENT' | 'ADMIN';
+  matricNumber?: string;
+  email?: string;
+  name?: string;
   password: string;
   confirmPassword: string;
 }

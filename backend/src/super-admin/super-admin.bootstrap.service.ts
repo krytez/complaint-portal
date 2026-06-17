@@ -74,69 +74,52 @@ export class SuperAdminBootstrapService implements OnApplicationBootstrap {
   }
 
   private async bootstrapAdmins(): Promise<void> {
-    const adminsConfig = [
-      {
-        emailKey: 'ADMIN_1_EMAIL',
-        passwordKey: 'ADMIN_1_PASSWORD',
-        nameKey: 'ADMIN_1_NAME',
-        defaultName: 'Admin One',
-      },
-      {
-        emailKey: 'ADMIN_2_EMAIL',
-        passwordKey: 'ADMIN_2_PASSWORD',
-        nameKey: 'ADMIN_2_NAME',
-        defaultName: 'Admin Two',
-      },
-      {
-        emailKey: 'ADMIN_3_EMAIL',
-        passwordKey: 'ADMIN_3_PASSWORD',
-        nameKey: 'ADMIN_3_NAME',
-        defaultName: 'Admin Three',
-      },
-    ];
-
-    for (const adminCfg of adminsConfig) {
-      const email = this.config.get<string>(adminCfg.emailKey);
-      const password = this.config.get<string>(adminCfg.passwordKey);
-      const name = this.config.get<string>(adminCfg.nameKey) ?? adminCfg.defaultName;
-
-      if (!email || !password) {
-        this.logger.warn(
-          `${adminCfg.emailKey} or ${adminCfg.passwordKey} is not set in .env — skipping this admin bootstrap.`,
-        );
-        continue;
+    try {
+      const seedFilePath = path.join(process.cwd(), 'admins-seed.json');
+      if (!fs.existsSync(seedFilePath)) {
+        this.logger.warn(`Seed file not found at ${seedFilePath} — skipping admin seeding.`);
+        return;
       }
 
-      const existing = await this.prisma.user.findUnique({ where: { email } });
+      const fileContent = fs.readFileSync(seedFilePath, 'utf8');
+      const admins = JSON.parse(fileContent);
 
-      if (!existing) {
-        const hashed = await bcrypt.hash(password, 10);
-        await this.prisma.user.create({
-          data: { email, name, password: hashed, role: 'ADMIN' },
-        });
-        this.logger.log(`Admin created → ${email}`);
-        continue;
+      if (!Array.isArray(admins)) {
+        this.logger.error('Invalid format in admins-seed.json — expected an array.');
+        return;
       }
 
-      const roleOk = existing.role === 'ADMIN';
-      const passwordOk = existing.password ? await bcrypt.compare(password, existing.password) : false;
-      const nameOk = existing.name === name;
+      for (const admin of admins) {
+        const { email } = admin;
+        if (!email) {
+          this.logger.warn(`Skipping invalid admin seed record: ${JSON.stringify(admin)}`);
+          continue;
+        }
 
-      if (roleOk && passwordOk && nameOk) {
-        this.logger.log(`Admin verified → ${email}`);
-        continue;
+        const existing = await this.prisma.user.findUnique({ where: { email } });
+
+        if (!existing) {
+          await this.prisma.user.create({
+            data: {
+              email,
+              name: '',
+              password: null,
+              role: 'ADMIN',
+            },
+          });
+          this.logger.log(`Pre-registered admin seeded → ${email}`);
+        } else {
+          if (existing.role !== 'ADMIN') {
+            await this.prisma.user.update({
+              where: { id: existing.id },
+              data: { role: 'ADMIN' },
+            });
+            this.logger.log(`Updated pre-registered admin role to ADMIN → ${email}`);
+          }
+        }
       }
-
-      const hashed = passwordOk
-        ? existing.password
-        : await bcrypt.hash(password, 10);
-      await this.prisma.user.update({
-        where: { email },
-        data: { role: 'ADMIN', password: hashed, name },
-      });
-      this.logger.log(
-        `Admin updated (role=${roleOk ? 'ok' : 'fixed'}, password=${passwordOk ? 'ok' : 'resynced'}, name=${nameOk ? 'ok' : 'fixed'}) → ${email}`,
-      );
+    } catch (error) {
+      this.logger.error('Failed to bootstrap pre-registered admins', error);
     }
   }
 

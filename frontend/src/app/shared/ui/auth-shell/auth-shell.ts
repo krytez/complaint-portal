@@ -75,6 +75,33 @@ import { RouterLink } from '@angular/router';
       margin-top: 1.5rem;
     }
 
+    .auth-shell__role-toggle {
+      display: flex;
+      background: #f1f5f9;
+      padding: 0.25rem;
+      border-radius: 0.75rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid #cbd5e1;
+    }
+
+    .auth-shell__role-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .auth-shell__role-btn--active {
+      background: #fff;
+      color: #1e293b;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    }
+
     .auth-shell__field {
       margin-bottom: 1rem;
     }

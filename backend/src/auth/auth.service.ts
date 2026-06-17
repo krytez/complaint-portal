@@ -22,31 +22,73 @@ export class AuthService {
       throw new BadRequestException('Passwords do not match');
     }
 
-    const student = await this.prisma.user.findUnique({
-      where: { matricNumber: dto.matricNumber },
-    });
+    const role = dto.role || 'STUDENT';
 
-    if (!student) {
-      throw new BadRequestException('You are not pre-registered/authorized to register');
+    if (role === 'ADMIN') {
+      if (!dto.email) {
+        throw new BadRequestException('Email is required for admin registration');
+      }
+      if (!dto.name || dto.name.trim().length < 2) {
+        throw new BadRequestException('Full name is required for admin registration');
+      }
+
+      const admin = await this.prisma.user.findUnique({
+        where: { email: dto.email },
+      });
+
+      if (!admin || admin.role !== 'ADMIN') {
+        throw new BadRequestException('You are not pre-registered/authorized to register as an admin');
+      }
+
+      if (admin.password) {
+        throw new ConflictException('Admin with this email is already registered');
+      }
+
+      const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+      const user = await this.prisma.user.update({
+        where: { id: admin.id },
+        data: {
+          name: dto.name,
+          password: hashedPassword,
+        },
+      });
+
+      // Remove password from response
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...result } = user;
+      return result;
+    } else {
+      if (!dto.matricNumber) {
+        throw new BadRequestException('Matric number is required for student registration');
+      }
+
+      const student = await this.prisma.user.findUnique({
+        where: { matricNumber: dto.matricNumber },
+      });
+
+      if (!student || student.role !== 'STUDENT') {
+        throw new BadRequestException('You are not pre-registered/authorized to register');
+      }
+
+      if (student.password) {
+        throw new ConflictException('Student with this matric number is already registered');
+      }
+
+      const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+      const user = await this.prisma.user.update({
+        where: { id: student.id },
+        data: {
+          password: hashedPassword,
+        },
+      });
+
+      // Remove password from response
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...result } = user;
+      return result;
     }
-
-    if (student.password) {
-      throw new ConflictException('Student with this matric number is already registered');
-    }
-
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
-
-    const user = await this.prisma.user.update({
-      where: { id: student.id },
-      data: {
-        password: hashedPassword,
-      },
-    });
-
-    // Remove password from response
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...result } = user;
-    return result;
   }
 
   async validateUser(
