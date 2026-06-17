@@ -34,8 +34,7 @@ export class RegisterComponent {
     };
 
     registerForm = this.fb.nonNullable.group({
-        name: [ '', [ Validators.required, Validators.minLength(2) ] ],
-        email: [ '', [ Validators.required, Validators.email ] ],
+        matricNumber: [ '', [ Validators.required ] ],
         password: [
             '',
             [
@@ -76,7 +75,7 @@ export class RegisterComponent {
         });
     }
 
-    hasError(controlName: 'name' | 'email' | 'password' | 'confirmPassword', error: string): boolean {
+    hasError(controlName: 'matricNumber' | 'password' | 'confirmPassword', error: string): boolean {
         const control = this.registerForm.controls[ controlName ];
         return control.touched && control.hasError(error);
     }

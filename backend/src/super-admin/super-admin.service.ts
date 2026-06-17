@@ -20,6 +20,7 @@ export class SuperAdminService {
       where: { id: superAdminId },
     });
     if (!user) throw new NotFoundException('Super admin not found');
+    if (!user.password) throw new ForbiddenException('Incorrect password');
     const match = await bcrypt.compare(password, user.password);
     if (!match) throw new ForbiddenException('Incorrect password');
   }

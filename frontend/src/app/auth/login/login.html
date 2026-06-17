@@ -20,20 +20,18 @@
 
   <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-shell__form">
     <div class="auth-shell__field">
-      <label class="auth-shell__label" for="login-email">Email</label>
+      <label class="auth-shell__label" for="login-identifier">Email or Matric Number</label>
       <input
-        id="login-email"
+        id="login-identifier"
         class="auth-shell__input"
-        type="email"
-        formControlName="email"
-        placeholder="you@example.com"
-        autocomplete="email"
-        [attr.aria-invalid]="hasError('email', 'required') || hasError('email', 'email')"
+        type="text"
+        formControlName="identifier"
+        placeholder="you@example.com or STUD1001"
+        autocomplete="username"
+        [attr.aria-invalid]="hasError('identifier', 'required')"
       />
-      @if (hasError('email', 'required')) {
-        <p class="auth-shell__error">Email is required.</p>
-      } @else if (hasError('email', 'email')) {
-        <p class="auth-shell__error">Please enter a valid email address.</p>
+      @if (hasError('identifier', 'required')) {
+        <p class="auth-shell__error">Email or Matric Number is required.</p>
       }
     </div>
 

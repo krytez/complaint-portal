@@ -30,7 +30,7 @@ export class LoginComponent {
     private route = inject(ActivatedRoute);
 
     loginForm = this.fb.nonNullable.group({
-        email: [ '', [ Validators.required, Validators.email ] ],
+        identifier: [ '', [ Validators.required ] ],
         password: [ '', [ Validators.required, Validators.minLength(6) ] ]
     });
     loading = signal(false);
@@ -71,7 +71,7 @@ export class LoginComponent {
         });
     }
 
-    hasError(controlName: 'email' | 'password', error: string): boolean {
+    hasError(controlName: 'identifier' | 'password', error: string): boolean {
         const control = this.loginForm.controls[ controlName ];
         return control.touched && control.hasError(error);
     }

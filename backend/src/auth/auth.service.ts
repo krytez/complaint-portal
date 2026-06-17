@@ -22,22 +22,24 @@ export class AuthService {
       throw new BadRequestException('Passwords do not match');
     }
 
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+    const student = await this.prisma.user.findUnique({
+      where: { matricNumber: dto.matricNumber },
     });
 
-    if (existingUser) {
-      throw new ConflictException('Email already exists');
+    if (!student) {
+      throw new BadRequestException('You are not pre-registered/authorized to register');
+    }
+
+    if (student.password) {
+      throw new ConflictException('Student with this matric number is already registered');
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-    const user = await this.prisma.user.create({
+    const user = await this.prisma.user.update({
+      where: { id: student.id },
       data: {
-        email: dto.email,
-        name: dto.name,
         password: hashedPassword,
-        role: dto.role || 'STUDENT',
       },
     });
 
@@ -48,14 +50,19 @@ export class AuthService {
   }
 
   async validateUser(
-    email: string,
+    identifier: string,
     pass: string,
   ): Promise<Omit<User, 'password'> | null> {
-    const user = await this.prisma.user.findUnique({
-      where: { email },
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: identifier },
+          { matricNumber: identifier },
+        ],
+      },
     });
 
-    if (user && (await bcrypt.compare(pass, user.password))) {
+    if (user && user.password && (await bcrypt.compare(pass, user.password))) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _, ...result } = user;
       return result;

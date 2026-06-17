@@ -22,13 +22,14 @@ enum ComplaintStatus {
 }
 
 model User {
-  id         String          @id @default(cuid())
-  name       String
-  email      String          @unique
-  password   String
-  role       Role            @default(STUDENT)
-  complaints Complaint[]
-  views      ComplaintView[]
+  id           String          @id @default(cuid())
+  name         String
+  email        String          @unique
+  matricNumber String?         @unique
+  password     String?
+  role         Role            @default(STUDENT)
+  complaints   Complaint[]
+  views        ComplaintView[]
 }
 
 model Complaint {

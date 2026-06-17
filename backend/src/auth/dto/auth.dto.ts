@@ -10,13 +10,9 @@ import {
 import { Role } from '@prisma/client';
 
 export class RegisterDto {
-  @IsEmail()
-  email: string;
-
   @IsString()
   @IsNotEmpty()
-  @MinLength(2)
-  name: string;
+  matricNumber: string;
 
   @IsString()
   @IsNotEmpty()
@@ -31,15 +27,12 @@ export class RegisterDto {
   @IsNotEmpty()
   @MinLength(6)
   confirmPassword: string;
-
-  @IsEnum(Role)
-  @IsOptional()
-  role?: Role;
 }
 
 export class LoginDto {
-  @IsEmail()
-  email: string;
+  @IsString()
+  @IsNotEmpty()
+  identifier: string;
 
   @IsString()
   @IsNotEmpty()

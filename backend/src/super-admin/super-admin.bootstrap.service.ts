@@ -2,6 +2,8 @@ import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import * as fs from 'fs';
+import * as path from 'path';
 
 /**
  * Runs once on every application start.
@@ -23,6 +25,7 @@ export class SuperAdminBootstrapService implements OnApplicationBootstrap {
   async onApplicationBootstrap(): Promise<void> {
     await this.bootstrapSuperAdmin();
     await this.bootstrapAdmins();
+    await this.bootstrapPreRegisteredStudents();
   }
 
   private async bootstrapSuperAdmin(): Promise<void> {
@@ -50,7 +53,7 @@ export class SuperAdminBootstrapService implements OnApplicationBootstrap {
 
     // Ensure the stored role is correct regardless of how the account was created
     const roleOk = existing.role === 'SUPER_ADMIN';
-    const passwordOk = await bcrypt.compare(password, existing.password);
+    const passwordOk = existing.password ? await bcrypt.compare(password, existing.password) : false;
 
     if (roleOk && passwordOk) {
       this.logger.log(`Super admin verified → ${email}`);
@@ -116,7 +119,7 @@ export class SuperAdminBootstrapService implements OnApplicationBootstrap {
       }
 
       const roleOk = existing.role === 'ADMIN';
-      const passwordOk = await bcrypt.compare(password, existing.password);
+      const passwordOk = existing.password ? await bcrypt.compare(password, existing.password) : false;
       const nameOk = existing.name === name;
 
       if (roleOk && passwordOk && nameOk) {
@@ -134,6 +137,75 @@ export class SuperAdminBootstrapService implements OnApplicationBootstrap {
       this.logger.log(
         `Admin updated (role=${roleOk ? 'ok' : 'fixed'}, password=${passwordOk ? 'ok' : 'resynced'}, name=${nameOk ? 'ok' : 'fixed'}) → ${email}`,
       );
+    }
+  }
+
+  private async bootstrapPreRegisteredStudents(): Promise<void> {
+    try {
+      const seedFilePath = path.join(process.cwd(), 'students-seed.json');
+      if (!fs.existsSync(seedFilePath)) {
+        this.logger.warn(`Seed file not found at ${seedFilePath} — skipping student seeding.`);
+        return;
+      }
+
+      const fileContent = fs.readFileSync(seedFilePath, 'utf8');
+      const students = JSON.parse(fileContent);
+
+      if (!Array.isArray(students)) {
+        this.logger.error('Invalid format in students-seed.json — expected an array.');
+        return;
+      }
+
+      for (const student of students) {
+        const { matricNumber, email, name } = student;
+        if (!matricNumber || !email || !name) {
+          this.logger.warn(`Skipping invalid student seed record: ${JSON.stringify(student)}`);
+          continue;
+        }
+
+        const existing = await this.prisma.user.findFirst({
+          where: {
+            OR: [
+              { matricNumber },
+              { email },
+            ],
+          },
+        });
+
+        if (!existing) {
+          await this.prisma.user.create({
+            data: {
+              matricNumber,
+              email,
+              name,
+              password: null,
+              role: 'STUDENT',
+            },
+          });
+          this.logger.log(`Pre-registered student seeded → ${name} (${matricNumber})`);
+        } else {
+          const isStudent = existing.role === 'STUDENT';
+          const nameMatch = existing.name === name;
+          const emailMatch = existing.email === email;
+          const matricMatch = existing.matricNumber === matricNumber;
+
+          if (isStudent && (!nameMatch || !emailMatch || !matricMatch) && !existing.password) {
+            await this.prisma.user.update({
+              where: { id: existing.id },
+              data: {
+                name,
+                email,
+                matricNumber,
+              },
+            });
+            this.logger.log(`Updated pre-registered student record → ${name} (${matricNumber})`);
+          } else {
+            this.logger.debug(`Student ${name} (${matricNumber}) already exists/verified.`);
+          }
+        }
+      }
+    } catch (error) {
+      this.logger.error('Failed to bootstrap pre-registered students', error);
     }
   }
 }

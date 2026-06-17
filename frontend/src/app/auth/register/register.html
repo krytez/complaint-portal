@@ -13,38 +13,18 @@
 
   <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-shell__form">
     <div class="auth-shell__field">
-      <label class="auth-shell__label" for="register-name">Full Name</label>
+      <label class="auth-shell__label" for="register-matric">Matric Number</label>
       <input
-        id="register-name"
+        id="register-matric"
         class="auth-shell__input"
         type="text"
-        formControlName="name"
-        placeholder="Your full name"
-        autocomplete="name"
-        [attr.aria-invalid]="hasError('name', 'required') || hasError('name', 'minlength')"
+        formControlName="matricNumber"
+        placeholder="Enter your matric number"
+        autocomplete="off"
+        [attr.aria-invalid]="hasError('matricNumber', 'required')"
       />
-      @if (hasError('name', 'required')) {
-        <p class="auth-shell__error">Name is required.</p>
-      } @else if (hasError('name', 'minlength')) {
-        <p class="auth-shell__error">Name must be at least 2 characters.</p>
-      }
-    </div>
-
-    <div class="auth-shell__field">
-      <label class="auth-shell__label" for="register-email">Email Address</label>
-      <input
-        id="register-email"
-        class="auth-shell__input"
-        type="email"
-        formControlName="email"
-        placeholder="you@example.com"
-        autocomplete="email"
-        [attr.aria-invalid]="hasError('email', 'required') || hasError('email', 'email')"
-      />
-      @if (hasError('email', 'required')) {
-        <p class="auth-shell__error">Email is required.</p>
-      } @else if (hasError('email', 'email')) {
-        <p class="auth-shell__error">Please enter a valid email address.</p>
+      @if (hasError('matricNumber', 'required')) {
+        <p class="auth-shell__error">Matric number is required.</p>
       }
     </div>
 

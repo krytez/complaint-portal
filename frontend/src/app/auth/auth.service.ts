@@ -24,15 +24,13 @@ export interface ApiResponse<T> {
 }
 
 export interface RegisterPayload {
-  name: string;
-  email: string;
+  matricNumber: string;
   password: string;
   confirmPassword: string;
-  role?: 'STUDENT' | 'ADMIN';
 }
 
 export interface LoginPayload {
-  email: string;
+  identifier: string;
   password: string;
 }
 
