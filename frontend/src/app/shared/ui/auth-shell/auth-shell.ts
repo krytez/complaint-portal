@@ -14,7 +14,7 @@ import { RouterLink } from '@angular/router';
         [attr.aria-labelledby]="headingId()"
       >
         <header class="auth-shell__header">
-          <h1 class="auth-shell__title" [id]="headingId()">{{ title() }}</h1>
+          <h1 class="auth-shell__title" [id]="headingId()">{{ shellTitle() }}</h1>
           <p class="auth-shell__subtitle">{{ subtitle() }}</p>
         </header>
 
@@ -101,6 +101,48 @@ import { RouterLink } from '@angular/router';
       outline: none;
       border-color: #2563eb;
       box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    }
+
+    .auth-shell__password-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .auth-shell__password-wrapper .auth-shell__input {
+      padding-right: 2.75rem;
+    }
+
+    .auth-shell__password-toggle {
+      position: absolute;
+      right: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      padding: 0;
+      border: none;
+      border-radius: 0.5rem;
+      background: transparent;
+      color: #64748b;
+      cursor: pointer;
+      transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .auth-shell__password-toggle:hover {
+      background-color: #f1f5f9;
+      color: #1e293b;
+    }
+
+    .auth-shell__password-toggle:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: -2px;
+    }
+
+    .auth-shell__password-toggle ng-icon {
+      display: inline-flex;
+      font-size: 1.25rem;
     }
 
     .auth-shell__select {
@@ -194,7 +236,7 @@ import { RouterLink } from '@angular/router';
   `
 })
 export class AuthShellComponent {
-  title = input.required<string>();
+  shellTitle = input.required<string>();
   subtitle = input.required<string>();
   footerText = input.required<string>();
   footerLink = input.required<string>();

@@ -196,7 +196,6 @@
                     aria-label="Select all complaints"
                   />
                 </th>
-                <th scope="col">Student</th>
                 <th scope="col">Description</th>
                 <th scope="col">Status</th>
                 <th scope="col">Date</th>
@@ -210,12 +209,8 @@
                       type="checkbox"
                       [checked]="selectedComplaintIds().has(complaint.id)"
                       (change)="toggleComplaint(complaint.id)"
-                      [aria-label]="'Select complaint from ' + complaint.student.name"
+                      [aria-label]="'Select complaint ' + complaint.id"
                     />
-                  </td>
-                  <td class="sa-table__student">
-                    <div>{{ complaint.student.name }}</div>
-                    <div class="sa-table__email">{{ complaint.student.email }}</div>
                   </td>
                   <td class="sa-table__preview">
                     {{ complaint.description | slice:0:80 }}{{ complaint.description.length > 80 ? '…' : '' }}

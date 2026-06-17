@@ -1,5 +1,5 @@
 <app-auth-shell
-  title="Welcome Back"
+  shellTitle="Welcome Back"
   subtitle="Sign in to your account to continue"
   footerText="Don't have an account?"
   footerLink="/register"
@@ -39,15 +39,26 @@
 
     <div class="auth-shell__field">
       <label class="auth-shell__label" for="login-password">Password</label>
-      <input
-        id="login-password"
-        class="auth-shell__input"
-        type="password"
-        formControlName="password"
-        placeholder="Enter your password"
-        autocomplete="current-password"
-        [attr.aria-invalid]="hasError('password', 'required') || hasError('password', 'minlength')"
-      />
+      <div class="auth-shell__password-wrapper">
+        <input
+          id="login-password"
+          class="auth-shell__input"
+          [type]="showPassword() ? 'text' : 'password'"
+          formControlName="password"
+          placeholder="Enter your password"
+          autocomplete="current-password"
+          [attr.aria-invalid]="hasError('password', 'required') || hasError('password', 'minlength')"
+        />
+        <button
+          type="button"
+          class="auth-shell__password-toggle"
+          (click)="showPassword.set(!showPassword())"
+          [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+          [attr.aria-controls]="'login-password'"
+        >
+          <ng-icon [name]="showPassword() ? 'heroEyeSlash' : 'heroEye'" />
+        </button>
+      </div>
       @if (hasError('password', 'required')) {
         <p class="auth-shell__error">Password is required.</p>
       } @else if (hasError('password', 'minlength')) {

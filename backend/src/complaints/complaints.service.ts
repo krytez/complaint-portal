@@ -20,27 +20,21 @@ export class ComplaintsService {
 
   /** GET /complaints/mine — Student retrieves their own complaints */
   async findMine(studentId: string) {
-    return this.prisma.complaint.findMany({
+    const complaints = await this.prisma.complaint.findMany({
       where: { studentId },
       orderBy: { createdAt: 'desc' },
-      include: {
-        views: {
-          include: {
-            admin: { select: { name: true, email: true } },
-          },
-        },
-      },
     });
+    return complaints.map((c) => ({
+      ...c,
+      views: undefined,
+    }));
   }
 
   /** GET /complaints — Admin retrieves all complaints */
   async findAll() {
-    return this.prisma.complaint.findMany({
+    const complaints = await this.prisma.complaint.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
-        student: {
-          select: { id: true, email: true, name: true, role: true },
-        },
         views: {
           include: {
             admin: { select: { name: true, email: true } },
@@ -48,6 +42,10 @@ export class ComplaintsService {
         },
       },
     });
+    return complaints.map((c) => ({
+      ...c,
+      student: undefined,
+    }));
   }
 
   /** PATCH /complaints/:id/view — Admin marks complaint as viewed */
@@ -74,33 +72,36 @@ export class ComplaintsService {
 
     // Automatically switch status from Pending to Seen
     if (complaint.status === 'Pending') {
-      return this.prisma.complaint.update({
+      const updated = await this.prisma.complaint.update({
         where: { id },
         data: { status: 'Seen' },
         include: {
           views: {
-            select: {
+            include: {
               admin: { select: { name: true, email: true } },
             },
           },
-          student: {
-            select: { name: true, email: true },
-          },
         },
       });
+      return {
+        ...updated,
+        student: undefined,
+      };
     }
 
-    return this.prisma.complaint.findUnique({
+    const result = await this.prisma.complaint.findUnique({
       where: { id },
       include: {
         views: {
           include: { admin: { select: { name: true, email: true } } },
         },
-        student: {
-          select: { name: true, email: true },
-        },
       },
     });
+    if (!result) return null;
+    return {
+      ...result,
+      student: undefined,
+    };
   }
 
   /** PATCH /complaints/:id/status — Admin updates complaint status manually */

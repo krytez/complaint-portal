@@ -104,12 +104,13 @@ export class SuperAdminService {
   // ── Complaints ────────────────────────────────────────────────────────────
 
   async getAllComplaints() {
-    return this.prisma.complaint.findMany({
+    const complaints = await this.prisma.complaint.findMany({
       orderBy: { createdAt: 'desc' },
-      include: {
-        student: { select: { name: true, email: true } },
-      },
     });
+    return complaints.map((c) => ({
+      ...c,
+      student: undefined,
+    }));
   }
 
   async deleteAllComplaints(superAdminId: string, password: string) {

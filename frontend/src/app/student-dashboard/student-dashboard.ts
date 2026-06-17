@@ -101,8 +101,4 @@ export class StudentDashboardComponent implements OnInit {
   dismissFeedback(): void {
     this.feedback.set(null);
   }
-
-  getViewedByNames(complaint: Complaint): string {
-    return complaint.views?.map((view) => view.admin.name).join(', ') ?? '';
-  }
 }

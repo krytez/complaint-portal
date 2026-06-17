@@ -34,7 +34,6 @@
             <tr>
               <th>Date</th>
               <th>Description (Preview)</th>
-              <th>Student</th>
               <th>
                 <button type="button" class="sort-button" (click)="toggleStatusSort()">
                   Status {{ sortDirection() === 'asc' ? '↑' : '↓' }}
@@ -49,10 +48,6 @@
                 <td>{{ data.createdAt | date:'medium' }}</td>
                 <td class="complaint-preview">
                   {{ data.description | slice:0:100 }}{{ data.description.length > 100 ? '...' : '' }}
-                </td>
-                <td class="student-cell">
-                  <div class="student-name">{{ data.student?.name }}</div>
-                  <div class="student-email">{{ data.student?.email }}</div>
                 </td>
                 <td>
                   <app-status-badge [status]="data.status" />
@@ -80,10 +75,6 @@
     (closed)="closeDetails()"
   >
     <dl class="dialog-shell__detail-grid">
-      <div>
-        <dt>Submitted By</dt>
-        <dd>{{ complaint.student?.name }} ({{ complaint.student?.email }})</dd>
-      </div>
       <div>
         <dt>Status</dt>
         <dd><app-status-badge [status]="complaint.status" /></dd>

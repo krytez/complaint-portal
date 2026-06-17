@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { heroEye, heroEyeSlash } from '@ng-icons/heroicons/outline';
 import { AuthService } from '../auth.service';
 import { AuthShellComponent } from '../../shared/ui/auth-shell/auth-shell';
 import { FeedbackBannerComponent } from '../../shared/ui/feedback-banner/feedback-banner';
@@ -12,7 +14,11 @@ import { FeedbackBannerComponent } from '../../shared/ui/feedback-banner/feedbac
         CommonModule,
         ReactiveFormsModule,
         AuthShellComponent,
-        FeedbackBannerComponent
+        FeedbackBannerComponent,
+        NgIcon
+    ],
+    providers: [
+        provideIcons({ heroEye, heroEyeSlash })
     ],
     templateUrl: './register.html',
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -41,6 +47,8 @@ export class RegisterComponent {
         confirmPassword: [ '', [ Validators.required ] ]
     }, { validators: this.passwordMatchValidator });
     loading = signal(false);
+    showPassword = signal(false);
+    showConfirmPassword = signal(false);
     errorMessage = signal<string | null>(null);
 
     onSubmit(): void {

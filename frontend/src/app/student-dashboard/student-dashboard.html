@@ -99,10 +99,6 @@
       </div>
     </dl>
 
-    @if (complaint.views?.length) {
-      <p class="dialog-shell__meta"><strong>Seen by:</strong> {{ getViewedByNames(complaint) }}</p>
-    }
-
     <div class="dialog-shell__panel">
       <p class="dialog-shell__copy">{{ complaint.description }}</p>
     </div>
