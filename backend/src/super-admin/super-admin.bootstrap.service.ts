@@ -53,7 +53,9 @@ export class SuperAdminBootstrapService implements OnApplicationBootstrap {
 
     // Ensure the stored role is correct regardless of how the account was created
     const roleOk = existing.role === 'SUPER_ADMIN';
-    const passwordOk = existing.password ? await bcrypt.compare(password, existing.password) : false;
+    const passwordOk = existing.password
+      ? await bcrypt.compare(password, existing.password)
+      : false;
 
     if (roleOk && passwordOk) {
       this.logger.log(`Super admin verified → ${email}`);
@@ -77,7 +79,9 @@ export class SuperAdminBootstrapService implements OnApplicationBootstrap {
     try {
       const seedFilePath = path.join(process.cwd(), 'admins-seed.json');
       if (!fs.existsSync(seedFilePath)) {
-        this.logger.warn(`Seed file not found at ${seedFilePath} — skipping admin seeding.`);
+        this.logger.warn(
+          `Seed file not found at ${seedFilePath} — skipping admin seeding.`,
+        );
         return;
       }
 
@@ -85,18 +89,24 @@ export class SuperAdminBootstrapService implements OnApplicationBootstrap {
       const admins = JSON.parse(fileContent);
 
       if (!Array.isArray(admins)) {
-        this.logger.error('Invalid format in admins-seed.json — expected an array.');
+        this.logger.error(
+          'Invalid format in admins-seed.json — expected an array.',
+        );
         return;
       }
 
       for (const admin of admins) {
         const { email } = admin;
         if (!email) {
-          this.logger.warn(`Skipping invalid admin seed record: ${JSON.stringify(admin)}`);
+          this.logger.warn(
+            `Skipping invalid admin seed record: ${JSON.stringify(admin)}`,
+          );
           continue;
         }
 
-        const existing = await this.prisma.user.findUnique({ where: { email } });
+        const existing = await this.prisma.user.findUnique({
+          where: { email },
+        });
 
         if (!existing) {
           await this.prisma.user.create({
@@ -114,7 +124,9 @@ export class SuperAdminBootstrapService implements OnApplicationBootstrap {
               where: { id: existing.id },
               data: { role: 'ADMIN' },
             });
-            this.logger.log(`Updated pre-registered admin role to ADMIN → ${email}`);
+            this.logger.log(
+              `Updated pre-registered admin role to ADMIN → ${email}`,
+            );
           }
         }
       }
@@ -127,7 +139,9 @@ export class SuperAdminBootstrapService implements OnApplicationBootstrap {
     try {
       const seedFilePath = path.join(process.cwd(), 'students-seed.json');
       if (!fs.existsSync(seedFilePath)) {
-        this.logger.warn(`Seed file not found at ${seedFilePath} — skipping student seeding.`);
+        this.logger.warn(
+          `Seed file not found at ${seedFilePath} — skipping student seeding.`,
+        );
         return;
       }
 
@@ -135,23 +149,24 @@ export class SuperAdminBootstrapService implements OnApplicationBootstrap {
       const students = JSON.parse(fileContent);
 
       if (!Array.isArray(students)) {
-        this.logger.error('Invalid format in students-seed.json — expected an array.');
+        this.logger.error(
+          'Invalid format in students-seed.json — expected an array.',
+        );
         return;
       }
 
       for (const student of students) {
         const { matricNumber, email, name } = student;
         if (!matricNumber || !email || !name) {
-          this.logger.warn(`Skipping invalid student seed record: ${JSON.stringify(student)}`);
+          this.logger.warn(
+            `Skipping invalid student seed record: ${JSON.stringify(student)}`,
+          );
           continue;
         }
 
         const existing = await this.prisma.user.findFirst({
           where: {
-            OR: [
-              { matricNumber },
-              { email },
-            ],
+            OR: [{ matricNumber }, { email }],
           },
         });
 
@@ -165,14 +180,20 @@ export class SuperAdminBootstrapService implements OnApplicationBootstrap {
               role: 'STUDENT',
             },
           });
-          this.logger.log(`Pre-registered student seeded → ${name} (${matricNumber})`);
+          this.logger.log(
+            `Pre-registered student seeded → ${name} (${matricNumber})`,
+          );
         } else {
           const isStudent = existing.role === 'STUDENT';
           const nameMatch = existing.name === name;
           const emailMatch = existing.email === email;
           const matricMatch = existing.matricNumber === matricNumber;
 
-          if (isStudent && (!nameMatch || !emailMatch || !matricMatch) && !existing.password) {
+          if (
+            isStudent &&
+            (!nameMatch || !emailMatch || !matricMatch) &&
+            !existing.password
+          ) {
             await this.prisma.user.update({
               where: { id: existing.id },
               data: {
@@ -181,9 +202,13 @@ export class SuperAdminBootstrapService implements OnApplicationBootstrap {
                 matricNumber,
               },
             });
-            this.logger.log(`Updated pre-registered student record → ${name} (${matricNumber})`);
+            this.logger.log(
+              `Updated pre-registered student record → ${name} (${matricNumber})`,
+            );
           } else {
-            this.logger.debug(`Student ${name} (${matricNumber}) already exists/verified.`);
+            this.logger.debug(
+              `Student ${name} (${matricNumber}) already exists/verified.`,
+            );
           }
         }
       }

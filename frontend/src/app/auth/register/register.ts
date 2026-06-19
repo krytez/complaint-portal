@@ -70,14 +70,17 @@ export class RegisterComponent {
         email.clearValidators();
         name.clearValidators();
         
+        // Both roles require email and name
+        email.setValidators([ Validators.required, Validators.email ]);
+        email.setValue('');
+        name.setValidators([ Validators.required, Validators.minLength(2) ]);
+        name.setValue('');
+        
         if (role === 'STUDENT') {
             matricNumber.setValidators([ Validators.required ]);
             matricNumber.setValue('');
         } else {
-            email.setValidators([ Validators.required, Validators.email ]);
-            email.setValue('');
-            name.setValidators([ Validators.required, Validators.minLength(2) ]);
-            name.setValue('');
+            matricNumber.setValue('');
         }
         
         matricNumber.updateValueAndValidity();
@@ -104,13 +107,12 @@ export class RegisterComponent {
             role: rawValues.role,
             password: rawValues.password,
             confirmPassword: rawValues.confirmPassword,
+            email: rawValues.email,
+            name: rawValues.name,
         };
         
         if (rawValues.role === 'STUDENT') {
             payload.matricNumber = rawValues.matricNumber;
-        } else {
-            payload.email = rawValues.email;
-            payload.name = rawValues.name;
         }
 
         this.authService.register(payload).subscribe({

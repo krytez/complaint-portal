@@ -26,10 +26,14 @@ export class AuthService {
 
     if (role === 'ADMIN') {
       if (!dto.email) {
-        throw new BadRequestException('Email is required for admin registration');
+        throw new BadRequestException(
+          'Email is required for admin registration',
+        );
       }
       if (!dto.name || dto.name.trim().length < 2) {
-        throw new BadRequestException('Full name is required for admin registration');
+        throw new BadRequestException(
+          'Full name is required for admin registration',
+        );
       }
 
       const admin = await this.prisma.user.findUnique({
@@ -37,11 +41,15 @@ export class AuthService {
       });
 
       if (!admin || admin.role !== 'ADMIN') {
-        throw new BadRequestException('You are not pre-registered/authorized to register as an admin');
+        throw new BadRequestException(
+          'You are not pre-registered/authorized to register as an admin',
+        );
       }
 
       if (admin.password) {
-        throw new ConflictException('Admin with this email is already registered');
+        throw new ConflictException(
+          'Admin with this email is already registered',
+        );
       }
 
       const hashedPassword = await bcrypt.hash(dto.password, 10);
@@ -60,7 +68,19 @@ export class AuthService {
       return result;
     } else {
       if (!dto.matricNumber) {
-        throw new BadRequestException('Matric number is required for student registration');
+        throw new BadRequestException(
+          'Matric number is required for student registration',
+        );
+      }
+      if (!dto.email) {
+        throw new BadRequestException(
+          'Email is required for student registration',
+        );
+      }
+      if (!dto.name || dto.name.trim().length < 2) {
+        throw new BadRequestException(
+          'Full name is required for student registration',
+        );
       }
 
       const student = await this.prisma.user.findUnique({
@@ -68,11 +88,26 @@ export class AuthService {
       });
 
       if (!student || student.role !== 'STUDENT') {
-        throw new BadRequestException('You are not pre-registered/authorized to register');
+        throw new BadRequestException(
+          'You are not pre-registered/authorized to register',
+        );
       }
 
       if (student.password) {
-        throw new ConflictException('Student with this matric number is already registered');
+        throw new ConflictException(
+          'Student with this matric number is already registered',
+        );
+      }
+
+      const existingUserWithEmail = await this.prisma.user.findFirst({
+        where: {
+          email: dto.email,
+          NOT: { id: student.id },
+        },
+      });
+
+      if (existingUserWithEmail) {
+        throw new ConflictException('Email is already in use');
       }
 
       const hashedPassword = await bcrypt.hash(dto.password, 10);
@@ -80,6 +115,8 @@ export class AuthService {
       const user = await this.prisma.user.update({
         where: { id: student.id },
         data: {
+          name: dto.name,
+          email: dto.email,
           password: hashedPassword,
         },
       });
@@ -97,10 +134,7 @@ export class AuthService {
   ): Promise<Omit<User, 'password'> | null> {
     const user = await this.prisma.user.findFirst({
       where: {
-        OR: [
-          { email: identifier },
-          { matricNumber: identifier },
-        ],
+        OR: [{ email: identifier }, { matricNumber: identifier }],
       },
     });
 
