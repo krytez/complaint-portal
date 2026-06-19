@@ -7,6 +7,7 @@ export interface SuperAdminUser {
   id: string;
   name: string;
   email: string;
+  matricNumber?: string | null;
   role: 'STUDENT' | 'ADMIN';
 }
 

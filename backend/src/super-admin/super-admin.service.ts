@@ -34,6 +34,7 @@ export class SuperAdminService {
         id: true,
         name: true,
         email: true,
+        matricNumber: true,
         role: true,
       },
       orderBy: { email: 'asc' },

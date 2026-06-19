@@ -99,6 +99,7 @@
                 </th>
                 <th scope="col">Name</th>
                 <th scope="col">Email</th>
+                <th scope="col">Matric Number</th>
                 <th scope="col">Role</th>
               </tr>
             </thead>
@@ -113,8 +114,9 @@
                       [aria-label]="'Select ' + user.name"
                     />
                   </td>
-                  <td>{{ user.name }}</td>
-                  <td class="sa-table__email">{{ user.email }}</td>
+                  <td>{{ user.name || '-' }}</td>
+                  <td class="sa-table__email">{{ user.email || '-' }}</td>
+                  <td>{{ user.matricNumber || '-' }}</td>
                   <td>
                     <span class="sa-role-chip" [class]="'sa-role-chip--' + user.role.toLowerCase()">
                       {{ user.role }}
