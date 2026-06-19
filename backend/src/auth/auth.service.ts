@@ -18,6 +18,12 @@ export class AuthService {
   ) { }
 
   async register(dto: RegisterDto) {
+    if (!dto.password) {
+      throw new BadRequestException('Password is required');
+    }
+    if (!dto.confirmPassword) {
+      throw new BadRequestException('Confirm password is required');
+    }
     if (dto.password !== dto.confirmPassword) {
       throw new BadRequestException('Passwords do not match');
     }
