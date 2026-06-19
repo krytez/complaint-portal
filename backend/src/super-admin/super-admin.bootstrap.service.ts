@@ -86,7 +86,7 @@ export class SuperAdminBootstrapService implements OnApplicationBootstrap {
       }
 
       const fileContent = fs.readFileSync(seedFilePath, 'utf8');
-      const admins = JSON.parse(fileContent);
+      const admins = JSON.parse(fileContent) as unknown;
 
       if (!Array.isArray(admins)) {
         this.logger.error(
@@ -95,8 +95,8 @@ export class SuperAdminBootstrapService implements OnApplicationBootstrap {
         return;
       }
 
-      for (const admin of admins) {
-        const { email } = admin;
+      for (const admin of admins as Array<{ email?: string }>) {
+        const email = admin?.email;
         if (!email) {
           this.logger.warn(
             `Skipping invalid admin seed record: ${JSON.stringify(admin)}`,
@@ -146,7 +146,7 @@ export class SuperAdminBootstrapService implements OnApplicationBootstrap {
       }
 
       const fileContent = fs.readFileSync(seedFilePath, 'utf8');
-      const students = JSON.parse(fileContent);
+      const students = JSON.parse(fileContent) as unknown;
 
       if (!Array.isArray(students)) {
         this.logger.error(
@@ -155,61 +155,32 @@ export class SuperAdminBootstrapService implements OnApplicationBootstrap {
         return;
       }
 
-      for (const student of students) {
-        const { matricNumber, email, name } = student;
-        if (!matricNumber || !email || !name) {
+      for (const student of students as Array<{ matricNumber?: string }>) {
+        const matricNumber = student?.matricNumber;
+        if (!matricNumber) {
           this.logger.warn(
             `Skipping invalid student seed record: ${JSON.stringify(student)}`,
           );
           continue;
         }
 
-        const existing = await this.prisma.user.findFirst({
-          where: {
-            OR: [{ matricNumber }, { email }],
-          },
+        const existing = await this.prisma.user.findUnique({
+          where: { matricNumber },
         });
 
         if (!existing) {
           await this.prisma.user.create({
             data: {
               matricNumber,
-              email,
-              name,
               password: null,
               role: 'STUDENT',
             },
           });
-          this.logger.log(
-            `Pre-registered student seeded → ${name} (${matricNumber})`,
-          );
+          this.logger.log(`Pre-registered student seeded → (${matricNumber})`);
         } else {
-          const isStudent = existing.role === 'STUDENT';
-          const nameMatch = existing.name === name;
-          const emailMatch = existing.email === email;
-          const matricMatch = existing.matricNumber === matricNumber;
-
-          if (
-            isStudent &&
-            (!nameMatch || !emailMatch || !matricMatch) &&
-            !existing.password
-          ) {
-            await this.prisma.user.update({
-              where: { id: existing.id },
-              data: {
-                name,
-                email,
-                matricNumber,
-              },
-            });
-            this.logger.log(
-              `Updated pre-registered student record → ${name} (${matricNumber})`,
-            );
-          } else {
-            this.logger.debug(
-              `Student ${name} (${matricNumber}) already exists/verified.`,
-            );
-          }
+          this.logger.debug(
+            `Student (${matricNumber}) already exists/verified.`,
+          );
         }
       }
     } catch (error) {

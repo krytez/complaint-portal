@@ -1,17 +1,11 @@
 [
   {
-    "matricNumber": "STUD1001",
-    "email": "student1@example.com",
-    "name": "Jane Doe"
+    "matricNumber": "STUD1001"
   },
   {
-    "matricNumber": "STUD1002",
-    "email": "student2@example.com",
-    "name": "John Smith"
+    "matricNumber": "STUD1002"
   },
   {
-    "matricNumber": "STUD1003",
-    "email": "student3@example.com",
-    "name": "Alice Johnson"
+    "matricNumber": "STUD1003"
   }
 ]
